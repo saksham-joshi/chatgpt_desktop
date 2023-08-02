@@ -1,7 +1,7 @@
 {
     "temperature": 0.6,
     "engine": "gpt-3.5-turbo-16k",
-    "max_tokens": 528,
+    "max_tokens": 512,
     "engine_list": [
         "ada",
         "ada-code-search-code",
