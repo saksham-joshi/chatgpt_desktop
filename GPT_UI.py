@@ -1,5 +1,7 @@
-from PyQt5.QtWidgets import QApplication , QTextEdit , QLineEdit , QWidget , QMenuBar , QMenu , QAction , QMessageBox , QLabel , QPushButton , QInputDialog
+from PyQt5.QtWidgets import QApplication , QTextEdit , QLineEdit , QWidget , QMenuBar , QMenu , QAction , QMessageBox , QLabel , QPushButton , QInputDialog , QSlider , QComboBox
 from PyQt5.QtGui import QIcon, QFont , QPixmap
+from PyQt5.QtCore import Qt
+
 from sys import argv , exit
 from webbrowser import open_new_tab
 from json import load,dump
@@ -10,6 +12,7 @@ with open("key.json","r") as file :
 
 email_link = "https://mail.google.com/mail/u/0/?fs=1&to=social.sakshamjoshi@gmail.com&tf=cm"
 
+
 class GUI :
 
     text_color = "rgba(239,239,249,255)"
@@ -19,6 +22,10 @@ class GUI :
     text_box_font = QFont("Times New Roman",pointSize=13,weight=87)
     dashboard_font = QFont("Bahnschrift",pointSize=12)
     message_box_font = QFont("Bahnschrift",pointSize=10)
+
+    query_temprature : float
+    query_max_token : int
+    query_engine : str
 
     about_text='''
     | Developed by : SAKSHAM JOSHI.
@@ -48,6 +55,9 @@ class GUI :
 
         this.api_key_dashboard = QWidget()
         this.api_key_dashboard_setup()        # function to setup API Key Dashboard window
+
+        this.setting_dashboard = QWidget()
+        this.setting_dashboard_setup()
 
         
         # Menu bar and its components setup starts here ....🔽
@@ -88,7 +98,10 @@ class GUI :
         this.delete_chat = QAction("Delete Chat")
         this.delete_chat.setFont(this.menu_item_font)
 
-        this.chat_menu.addActions([this.new_chat , this.load_chat , this.save_chat , this.delete_chat])
+        this.settings = QAction("Settings")
+        this.settings.setFont(this.menu_item_font)
+
+        this.chat_menu.addActions([this.new_chat , this.load_chat , this.save_chat , this.delete_chat,this.settings])
         this.menubar.addMenu(this.chat_menu)
         this.chat_menu.triggered[QAction].connect(this.chat_menu_triggered)
 
@@ -154,6 +167,104 @@ class GUI :
             this.api_key_dashboard.show()
 
         exit(this.app.exec())
+
+    # function to setup Setting's Menu
+    def setting_dashboard_setup(this) :
+        this.setting_dashboard.setFixedSize(640,360)
+        this.setting_dashboard.setStyleSheet("background-color:"+this.background_color_theme)
+        this.setting_dashboard.setWindowTitle("Query Settings")
+        this.setting_dashboard.setWindowIcon(this.icon)
+
+        title_label = QLabel("Temperature                    Max. Token                    Engine",this.setting_dashboard)
+        title_label.setStyleSheet('''
+            color:white;
+            text-align:center;
+        ''')
+        title_label.setGeometry(75,30,450,40)
+        title_label.setFont(this.dashboard_font)
+        
+        temprature = QSlider(this.setting_dashboard)
+        temprature.setRange(0,20)
+        temprature.setOrientation(Qt.Orientation.Vertical)
+        temprature.setTickPosition(QSlider.TicksRight)
+        temprature.setGeometry(75,90,30,200)
+
+        temperature_label = QLabel(this.setting_dashboard)
+        temperature_label.setFont(this.dashboard_font)
+        temperature_label.setGeometry(75,290,30,50)
+        temperature_label.setStyleSheet('''
+            color:white;
+        ''')
+        def temprature_value_changed() :
+            temperature_label.setText(str(temprature.value()/10))
+            this.query_temprature = float(temperature_label.text())
+        temprature.valueChanged.connect(temprature_value_changed)
+       
+        max_token = QSlider(this.setting_dashboard)
+        max_token.setRange(128,2048)
+        max_token.setOrientation(Qt.Orientation.Vertical)
+        max_token.setTickPosition(QSlider.TicksRight)
+        max_token.setGeometry(270,90,30,200)
+        
+        max_token_label = QLabel(this.setting_dashboard)
+        max_token_label.setFont(this.dashboard_font)
+        max_token_label.setGeometry(270,290,50,50)
+        max_token_label.setStyleSheet('''
+            color:white;
+        ''')
+        def max_token_value_changed() :
+            max_token_label.setText(str(max_token.value()))
+            this.query_max_token = int(max_token_label.text())
+        max_token.valueChanged.connect(max_token_value_changed)
+
+        engine = QComboBox(this.setting_dashboard)
+        engine.setGeometry(450,90,150,30)
+        engine.setStyleSheet('''
+            color:white;
+            font-family:gill sans;
+        ''')
+
+        save_button = QPushButton("Save",this.setting_dashboard)
+        save_button.setFont(this.dashboard_font)
+        save_button.setGeometry(450,200,100,30)
+        save_button.setStyleSheet('''
+            QPushButton{
+                color:white;
+            }
+            QPushButton:hover{
+                background-color:black;
+                color:lightgray
+            }
+            QPushButton::pressed{
+                background-color:lightgray;
+                color:white
+            }
+        ''')
+        def save_button_clicked() :
+            with open("config.json") as file :
+                dit = load(file)
+                with open("config.json","w") as file2 :
+                    dit["temperature"] = this.query_temprature
+                    dit["max_tokens"] = this.query_max_token
+                    dit["engine"] = this.query_engine
+                    dump(dit,file2,indent=4)
+        save_button.clicked.connect(save_button_clicked)
+        
+        with open("config.json") as file :
+            dit = load(file)
+            this.query_temprature = dit["temperature"]
+            this.query_max_token = dit["max_tokens"]
+            this.query_engine = dit["engine"]
+
+            temprature.setValue(int(this.query_temprature*10))
+            temperature_label.setText(str(this.query_temprature))
+
+            max_token.setValue(this.query_max_token)
+            max_token_label.setText(str(this.query_max_token))
+
+            engine.addItems(dit["engine_list"])
+            engine.setCurrentText(this.query_engine)
+
 
     # function to setup API KEY Menu item in options menu of menubar ............ 👇
     def api_key_dashboard_setup(this) :
@@ -318,6 +429,8 @@ class GUI :
                     this.warning_displayer("Chat Successfully deleted !","Deleted Chat")
                 except :
                     this.warning_displayer("File not deleted !\n Something went wrong.","Failed to delete")
+        elif q.text() == "Settings" :
+            this.setting_dashboard.show()
 
     # if menu items like about and feedback are pressed then this function will execute    
     def MenuItem_triggered(this,q : QAction) :
@@ -350,8 +463,10 @@ class GUI :
 
     def execute(this,query : str) :
         try :
-            c = oa.Completion.create(engine= "text-davinci-003" , prompt=query , max_tokens=512 , temperature=0.1)
-            return c["choices"][0]["text"]
+            # c = oa.Completion.create(engine= "text-davinci-003" , prompt=query , max_tokens=512 , temperature=0.6)
+            # return c["choices"][0]["text"]
+            c = oa.ChatCompletion.create(model=this.query_engine, messages=[{"content" : query,"role":"user"}] , temperature= this.query_temprature , max_tokens= this.query_max_token)
+            return c["choices"][0]["message"]["content"]
         except oa.error.APIConnectionError:
             this.warning_displayer("You are not connected to the Internet .","No Internet Connection.")
         except oa.error.AuthenticationError :
@@ -388,5 +503,5 @@ class GUI :
         except : this.warning_displayer("Something went wrong while operating on your chat file","Error")
 
 if __name__ == "__main__" :
-    
+   
     GUI()
