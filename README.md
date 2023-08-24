@@ -8,6 +8,7 @@ Namaste , this repository contains following files ->
 4. chats.json - This file will store your previous chats and you can import the chats too .
 5. icon.png - This is required if you want to view a icon in your application.
 6. config.json - This file contains the values of required temperature , maximum token ,engine name and all the available engines in OpenAi python module .
+7. ACKNO.ttf - it is a font file which needs to be installed before running the app .
 
 That's all , use this code wisely and if you have any feedback so don't mind to tell me.
 I will be thankful for your contribution in this repository .
