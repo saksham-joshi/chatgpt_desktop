@@ -1,5 +1,7 @@
 # Chatgpt Desktop
 
+<img src="icon.png" width=500 alt="ChatGPT">
+
 Namaste, this repository contains following files ->
 
 1. GPT_UI.py - This is the main file which you will execute but before executing it make sure that you have Python3 installed with PyQT5 and OpenAi module installed . Also all below files in the same directory .
